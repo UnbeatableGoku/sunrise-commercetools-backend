@@ -5,6 +5,12 @@ const typeDefs = gql`
   type Query {
     products: [Product]
     singleProduct(id: String!): Product
+    searchProducts(query: String): [Product]
+    searchSuggestion(keyword: String!): [Suggestion]
+  }
+
+  type Suggestion {
+    text: String
   }
 
   type Product {
@@ -20,8 +26,8 @@ const typeDefs = gql`
     id: String
     images: [Image]
     prices: [Price]
-    attributes:JSON
-    sku:String
+    attributes: JSON
+    sku: String
   }
 
   type Price {
@@ -29,7 +35,7 @@ const typeDefs = gql`
   }
   type priceValue {
     centAmount: Int
-    currencyCode:String
+    currencyCode: String
   }
 
   type Name {
