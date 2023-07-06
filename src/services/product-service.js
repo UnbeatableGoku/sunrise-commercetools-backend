@@ -102,6 +102,32 @@ const getSearchSuggestionService = async (keyword) => {
     throw error;
   }
 };
+const createCustomerService = async (email, phoneNumber) => {
+  try {
+    const result = await apiRoot
+      .me()
+      .signup()
+      .post({
+        body: {
+          email: email,
+          password: 'root1@123',
+          custom: {
+            type: {
+              key: 'customer-mobile-no',
+              typeId: 'type',
+            },
+            fields: {
+              phoneNo: { en: phoneNumber },
+            },
+          },
+        },
+      })
+      .execute();
+    return result.body.customer;
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 // Export the functions for external use
 module.exports = {
@@ -109,4 +135,5 @@ module.exports = {
   getProductDetailsService,
   getSearchProductsService,
   getSearchSuggestionService,
+  createCustomerService,
 };

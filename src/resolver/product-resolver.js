@@ -1,10 +1,11 @@
+const { firebaseAuth } = require('../config/firebseConfig');
 const {
   getProductService,
   getProductDetailsService,
   getSearchProductsService,
   getSearchSuggestionService,
+  createCustomerService,
 } = require('../services/product-service');
-
 /**
  * Retrieves a list of products.
  *
@@ -76,12 +77,64 @@ const getSearchSuggestion = async (parent, { keyword }) => {
   }
 };
 
+const getAuthentication = async (parent, { token }) => {
+  try {
+    console.log(token);
+    return 'hello world';
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const checkExistUser = async (parent, { email, phoneNumber }) => {
+  try {
+    const result = await firebaseAuth.getUserByEmail(email);
+    console.log(result);
+    if (result) {
+      return {
+        userExist: true,
+      };
+    }
+  } catch (error) {
+    console.log(error);
+    try {
+      const userByPhone = await firebaseAuth.getUserByPhoneNumber(phoneNumber);
+      if (userByPhone) {
+        return { userExist: true };
+      }
+    } catch (error) {
+      console.log(error);
+      if (error.code === 'auth/user-not-found') {
+        return {
+          userExist: false,
+        };
+      }
+    }
+  }
+};
+
+const addNewCustomer = async (parent, { email, phoneNumber }, { res }) => {
+  try {
+    const result = await createCustomerService(email, phoneNumber);
+    console.log(result);
+    res.set('Set-Cookie', `token=123123123; HttpOnly`);
+    return result;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const resolvers = {
   Query: {
     products: getProducts,
     singleProduct: getProductDetails,
     searchProducts: getSearchedProducts,
     searchSuggestion: getSearchSuggestion,
+  },
+  Mutation: {
+    auth: getAuthentication,
+    verifyExistUser: checkExistUser,
+    createCustomer: addNewCustomer,
   },
 };
 

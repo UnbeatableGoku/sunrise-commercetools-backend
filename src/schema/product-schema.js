@@ -2,11 +2,18 @@ const { gql } = require('apollo-server');
 
 const typeDefs = gql`
   scalar JSON
+
   type Query {
     products: [Product]
     singleProduct(id: String!): Product
     searchProducts(query: String): [Product]
     searchSuggestion(keyword: String!): [Suggestion]
+  }
+
+  type Mutation {
+    auth(token: String!): JSON
+    verifyExistUser(email: String!, phoneNumber: String!): JSON
+    createCustomer(email: String!, phoneNumber: String!): JSON
   }
 
   type Suggestion {
