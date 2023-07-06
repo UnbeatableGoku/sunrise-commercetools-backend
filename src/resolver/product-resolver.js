@@ -1,11 +1,11 @@
-const { firebaseAuth } = require('../config/firebseConfig');
+const { firebaseAuth } = require("../config/firebseConfig");
 const {
   getProductService,
   getProductDetailsService,
   getSearchProductsService,
   getSearchSuggestionService,
   createCustomerService,
-} = require('../services/product-service');
+} = require("../services/product-service");
 /**
  * Retrieves a list of products.
  *
@@ -18,7 +18,7 @@ const getProducts = async () => {
     return products;
   } catch (error) {
     console.error(error);
-    throw new Error('Failed to fetch products');
+    throw new Error("Failed to fetch products");
   }
 };
 
@@ -37,7 +37,7 @@ const getProductDetails = async (parent, { id }) => {
     return details;
   } catch (error) {
     console.log(error);
-    throw new Error('Failed to fetch product details');
+    throw new Error("Failed to fetch product details");
   }
 };
 
@@ -55,7 +55,7 @@ const getSearchedProducts = async (parent, { query }) => {
     return products;
   } catch (error) {
     console.log(error);
-    throw new Error('Failed to fetch products');
+    throw new Error("Failed to fetch products");
   }
 };
 
@@ -73,18 +73,35 @@ const getSearchSuggestion = async (parent, { keyword }) => {
     return suggestion;
   } catch (error) {
     console.log(error);
-    throw new Error('Failed to fetch the suggestion');
+    throw new Error("Failed to fetch the suggestion");
   }
 };
 
+/**
+ * Authenticates the user.
+ *
+ * @param {Object} parent The parent object provided by the GraphQL resolver.
+ * @param {Object} args The arguments provided for the resolver, containing the authentication token.
+ * @returns {Promise<String>} A greeting message upon successful authentication.
+ * @throws {Error} If an error occurs during authentication.
+ */
 const getAuthentication = async (parent, { token }) => {
   try {
     console.log(token);
-    return 'hello world';
+    return "hello world";
   } catch (error) {
     console.log(error);
   }
 };
+
+/**
+ * Checks if a user with the given email or phone number already exists.
+ *
+ * @param {Object} parent The parent object provided by the GraphQL resolver.
+ * @param {Object} args The arguments provided for the resolver, containing the email and phone number.
+ * @returns {Promise<Object>} An object indicating whether the user exists or not.
+ * @throws {Error} If an error occurs while checking the user's existence.
+ */
 
 const checkExistUser = async (parent, { email, phoneNumber }) => {
   try {
@@ -104,7 +121,7 @@ const checkExistUser = async (parent, { email, phoneNumber }) => {
       }
     } catch (error) {
       console.log(error);
-      if (error.code === 'auth/user-not-found') {
+      if (error.code === "auth/user-not-found") {
         return {
           userExist: false,
         };
@@ -113,11 +130,21 @@ const checkExistUser = async (parent, { email, phoneNumber }) => {
   }
 };
 
+/**
+ * Adds a new customer.
+ *
+ * @param {Object} parent The parent object provided by the GraphQL resolver.
+ * @param {Object} args The arguments provided for the resolver, containing the email and phone number.
+ * @param {Object} context The context object provided by the GraphQL resolver, containing the response object.
+ * @returns {Promise<Object>} The result of adding the new customer.
+ * @throws {Error} If an error occurs while adding the customer.
+ */
+
 const addNewCustomer = async (parent, { email, phoneNumber }, { res }) => {
   try {
     const result = await createCustomerService(email, phoneNumber);
     console.log(result);
-    res.set('Set-Cookie', `token=123123123; HttpOnly`);
+    res.set("Set-Cookie", `token=123123123; HttpOnly`);
     return result;
   } catch (error) {
     console.log(error);

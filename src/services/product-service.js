@@ -1,5 +1,5 @@
-const { apiRoot } = require('../config/ctpClient');
-const { v4: uuidv4 } = require('uuid');
+const { apiRoot } = require("../config/ctpClient");
+const { v4: uuidv4 } = require("uuid");
 
 /**
  * Retrieves a list of products and assigns a unique ID to each master variant.
@@ -60,7 +60,7 @@ const getSearchProductsService = async (query) => {
     const products = await apiRoot
       .productProjections()
       .search()
-      .get({ queryArgs: { 'text.en': query, limit: 20, fuzzy: true } })
+      .get({ queryArgs: { "text.en": query, limit: 20, fuzzy: true } })
       .execute();
     const productsWithId = products.body.results.map((product) => ({
       ...product,
@@ -91,17 +91,27 @@ const getSearchSuggestionService = async (keyword) => {
       .suggest()
       .get({
         queryArgs: {
-          'searchKeywords.en': keyword,
+          "searchKeywords.en": keyword,
           fuzzy: true,
         },
       })
       .execute();
-    return suggestion.body['searchKeywords.en'];
+    return suggestion.body["searchKeywords.en"];
   } catch (error) {
     console.log(error);
     throw error;
   }
 };
+
+/**
+ * Creates a new customer with the provided email and phone number.
+ *
+ * @param {string} email The email of the new customer.
+ * @param {string} phoneNumber The phone number of the new customer.
+ * @returns {Promise<Object>} The newly created customer.
+ * @throws {Error} If an error occurs during the API call.
+ */
+
 const createCustomerService = async (email, phoneNumber) => {
   try {
     const result = await apiRoot
@@ -110,11 +120,11 @@ const createCustomerService = async (email, phoneNumber) => {
       .post({
         body: {
           email: email,
-          password: 'root1@123',
+          password: "root1@123",
           custom: {
             type: {
-              key: 'customer-mobile-no',
-              typeId: 'type',
+              key: "customer-mobile-no",
+              typeId: "type",
             },
             fields: {
               phoneNo: { en: phoneNumber },
