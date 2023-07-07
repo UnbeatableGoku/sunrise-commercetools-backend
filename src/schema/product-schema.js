@@ -13,7 +13,7 @@ const typeDefs = gql`
   type Mutation {
     auth(token: String!): JSON
     verifyExistUser(email: String!, phoneNumber: String!): JSON
-    createCustomer(email: String!, phoneNumber: String!): JSON
+    createCustomer(tokenId: String!): JSON
   }
 
   type Suggestion {

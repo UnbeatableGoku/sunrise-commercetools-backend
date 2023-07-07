@@ -1,11 +1,11 @@
-const { firebaseAuth } = require("../config/firebseConfig");
+const { firebaseAuth } = require('../config/firebseConfig');
 const {
   getProductService,
   getProductDetailsService,
   getSearchProductsService,
   getSearchSuggestionService,
   createCustomerService,
-} = require("../services/product-service");
+} = require('../services/product-service');
 /**
  * Retrieves a list of products.
  *
@@ -18,7 +18,7 @@ const getProducts = async () => {
     return products;
   } catch (error) {
     console.error(error);
-    throw new Error("Failed to fetch products");
+    throw new Error('Failed to fetch products');
   }
 };
 
@@ -37,7 +37,7 @@ const getProductDetails = async (parent, { id }) => {
     return details;
   } catch (error) {
     console.log(error);
-    throw new Error("Failed to fetch product details");
+    throw new Error('Failed to fetch product details');
   }
 };
 
@@ -55,7 +55,7 @@ const getSearchedProducts = async (parent, { query }) => {
     return products;
   } catch (error) {
     console.log(error);
-    throw new Error("Failed to fetch products");
+    throw new Error('Failed to fetch products');
   }
 };
 
@@ -73,7 +73,7 @@ const getSearchSuggestion = async (parent, { keyword }) => {
     return suggestion;
   } catch (error) {
     console.log(error);
-    throw new Error("Failed to fetch the suggestion");
+    throw new Error('Failed to fetch the suggestion');
   }
 };
 
@@ -88,7 +88,7 @@ const getSearchSuggestion = async (parent, { keyword }) => {
 const getAuthentication = async (parent, { token }) => {
   try {
     console.log(token);
-    return "hello world";
+    return 'hello world';
   } catch (error) {
     console.log(error);
   }
@@ -121,7 +121,7 @@ const checkExistUser = async (parent, { email, phoneNumber }) => {
       }
     } catch (error) {
       console.log(error);
-      if (error.code === "auth/user-not-found") {
+      if (error.code === 'auth/user-not-found') {
         return {
           userExist: false,
         };
@@ -140,11 +140,17 @@ const checkExistUser = async (parent, { email, phoneNumber }) => {
  * @throws {Error} If an error occurs while adding the customer.
  */
 
-const addNewCustomer = async (parent, { email, phoneNumber }, { res }) => {
+const addNewCustomer = async (parent, { tokenId }, { res }) => {
   try {
-    const result = await createCustomerService(email, phoneNumber);
+    console.log(tokenId);
+    const decode = await firebaseAuth.verifyIdToken(tokenId);
+    console.log('this is decode --------------', decode);
+    const result = await createCustomerService(
+      decode.email,
+      decode.phone_number,
+      decode.name
+    );
     console.log(result);
-    res.set("Set-Cookie", `token=123123123; HttpOnly`);
     return result;
   } catch (error) {
     console.log(error);

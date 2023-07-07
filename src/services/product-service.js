@@ -112,7 +112,7 @@ const getSearchSuggestionService = async (keyword) => {
  * @throws {Error} If an error occurs during the API call.
  */
 
-const createCustomerService = async (email, phoneNumber) => {
+const createCustomerService = async (email, phoneNumber,name) => {
   try {
     const result = await apiRoot
       .me()
@@ -120,7 +120,8 @@ const createCustomerService = async (email, phoneNumber) => {
       .post({
         body: {
           email: email,
-          password: "root1@123",
+          password: email,
+          firstName:name,
           custom: {
             type: {
               key: "customer-mobile-no",
