@@ -1,5 +1,6 @@
-const { apiRoot } = require("../config/ctpClient");
-const { v4: uuidv4 } = require("uuid");
+const { apiRoot } = require('../config/ctpClient');
+const { v4: uuidv4 } = require('uuid');
+const { firebaseAuth } = require('../config/firebseConfig');
 
 /**
  * Retrieves a list of products and assigns a unique ID to each master variant.
@@ -60,7 +61,7 @@ const getSearchProductsService = async (query) => {
     const products = await apiRoot
       .productProjections()
       .search()
-      .get({ queryArgs: { "text.en": query, limit: 20, fuzzy: true } })
+      .get({ queryArgs: { 'text.en': query, limit: 20, fuzzy: true } })
       .execute();
     const productsWithId = products.body.results.map((product) => ({
       ...product,
@@ -91,12 +92,12 @@ const getSearchSuggestionService = async (keyword) => {
       .suggest()
       .get({
         queryArgs: {
-          "searchKeywords.en": keyword,
+          'searchKeywords.en': keyword,
           fuzzy: true,
         },
       })
       .execute();
-    return suggestion.body["searchKeywords.en"];
+    return suggestion.body['searchKeywords.en'];
   } catch (error) {
     console.log(error);
     throw error;
@@ -112,7 +113,7 @@ const getSearchSuggestionService = async (keyword) => {
  * @throws {Error} If an error occurs during the API call.
  */
 
-const createCustomerService = async (email, phoneNumber,name) => {
+const createCustomerService = async (email, phoneNumber, name) => {
   try {
     const result = await apiRoot
       .me()
@@ -121,11 +122,11 @@ const createCustomerService = async (email, phoneNumber,name) => {
         body: {
           email: email,
           password: email,
-          firstName:name,
+          firstName: name,
           custom: {
             type: {
-              key: "customer-mobile-no",
-              typeId: "type",
+              key: 'customer-mobile-no',
+              typeId: 'type',
             },
             fields: {
               phoneNo: { en: phoneNumber },
@@ -140,6 +141,33 @@ const createCustomerService = async (email, phoneNumber,name) => {
   }
 };
 
+const checkSocialUserService = async (email) => {
+  try {
+    const updatedUser = await firebaseAuth.getUserByEmail(email);
+    return updatedUser;
+  } catch (error) {
+    console.log(error);
+  }
+};
+const updateUserEmailService = async (uid, email) => {
+  try {
+    const updatedUser = await firebaseAuth.updateUser(uid, {
+      email,
+    });
+    return updatedUser;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const deleteSocialUserService = async (uid) => {
+  try {
+    const deleteSocialUser = await firebaseAuth.deleteUser(uid);
+    return deleteSocialUser;
+  } catch (error) {
+    console.log(error);
+  }
+};
 // Export the functions for external use
 module.exports = {
   getProductService,
@@ -147,4 +175,7 @@ module.exports = {
   getSearchProductsService,
   getSearchSuggestionService,
   createCustomerService,
+  checkSocialUserService,
+  updateUserEmailService,
+  deleteSocialUserService,
 };

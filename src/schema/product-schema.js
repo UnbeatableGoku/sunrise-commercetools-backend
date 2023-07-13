@@ -1,6 +1,6 @@
-const { gql } = require('apollo-server');
 
-const typeDefs = gql`
+const typeDefs = `#graphql
+
   scalar JSON
 
   type Query {
@@ -14,6 +14,7 @@ const typeDefs = gql`
     auth(token: String!): JSON
     verifyExistUser(email: String!, phoneNumber: String!): JSON
     createCustomer(tokenId: String!): JSON
+    verifySocialUser(token:String!):JSON
   }
 
   type Suggestion {

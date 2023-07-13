@@ -5,6 +5,9 @@ const {
   getSearchProductsService,
   getSearchSuggestionService,
   createCustomerService,
+  checkSocialUserService,
+  updateUserEmailService,
+  deleteSocialUserService,
 } = require('../services/product-service');
 /**
  * Retrieves a list of products.
@@ -156,7 +159,28 @@ const addNewCustomer = async (parent, { tokenId }, { res }) => {
     console.log(error);
   }
 };
+const checkSocialUser = async (parent, { token }) => {
+  try {
+    const decode = await firebaseAuth.verifyIdToken(token);
+    const user = await firebaseAuth.getUser(decode.uid);
+    const uid = decode.uid;
+    const email = user.providerData[0].email;
+    const result = await checkSocialUserService(email);
 
+    if (!result) {
+      const userWithUpdatedEmail = await updateUserEmailService(uid, email);
+      console.log(userWithUpdatedEmail, 'updateSOcialEmail successfully');
+      return { userUpdatedWithEmail: true };
+    } else {
+      const deleteSocialUser = await deleteSocialUserService(uid);
+      console.log(deleteSocialUser, 'deleteSocialUser successfully');
+      return { userDeleted: true };
+    }
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+};
 const resolvers = {
   Query: {
     products: getProducts,
@@ -168,6 +192,7 @@ const resolvers = {
     auth: getAuthentication,
     verifyExistUser: checkExistUser,
     createCustomer: addNewCustomer,
+    verifySocialUser: checkSocialUser,
   },
 };
 
