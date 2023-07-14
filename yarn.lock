@@ -174,6 +174,14 @@
     "@commercetools/sdk-middleware-http" "^7.0.0"
     "@commercetools/sdk-middleware-logger" "^3.0.0"
 
+"@commercetools/sdk-auth@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@commercetools/sdk-auth/-/sdk-auth-4.0.1.tgz#fa3f26f002aaba369a1b684cf803f48620de87b3"
+  integrity sha512-P/3LHeWBMHJXw2SVBHyjiHFBVqjYxSmPPVQzJOBzYkfPIH1HHHqyptfg9o7N+PmmIp27VIfPikeLSv6iZPYa1g==
+  dependencies:
+    "@commercetools/sdk-middleware-http" "^7.0.0"
+    qss "2.0.3"
+
 "@commercetools/sdk-client-v2@^2.1.6", "@commercetools/sdk-client-v2@^2.2.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@commercetools/sdk-client-v2/-/sdk-client-v2-2.2.0.tgz#3b4aa34f4257dc795349847e2fdb561dd95cbb97"
@@ -746,7 +754,7 @@ body-parser@1.20.1:
     type-is "~1.6.18"
     unpipe "1.0.0"
 
-body-parser@^1.20.0:
+body-parser@^1.20.0, body-parser@^1.20.2:
   version "1.20.2"
   resolved "https://registry.yarnpkg.com/body-parser/-/body-parser-1.20.2.tgz#6feb0e21c4724d06de7ff38da36dad4f57a747fd"
   integrity sha512-ml9pReCu3M61kGlqoTm2umSXTlRTuGTx0bfYj+uIUKKYycG5NtSbeetV3faSU6R7ajOPw0g/J1PvK4qNy7s5bA==
@@ -1991,6 +1999,11 @@ qs@6.11.0:
   integrity sha512-MvjoMCJwEarSbUYk5O+nmoSzSutSsTwF85zcHPQ9OrlFoZOYIjaqBAJIqIXjptyD5vThxGq52Xu/MaJzRkIk4Q==
   dependencies:
     side-channel "^1.0.4"
+
+qss@2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/qss/-/qss-2.0.3.tgz#630b38b120931b52d04704f3abfb0f861604a9ec"
+  integrity sha512-j48ZBT5IZbSqJiSU8EX4XrN8nXiflHvmMvv2XpFc31gh7n6EpSs75bNr6+oj3FOLWyT8m09pTmqLNl34L7/uPQ==
 
 range-parser@~1.2.1:
   version "1.2.1"

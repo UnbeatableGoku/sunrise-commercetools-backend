@@ -1,6 +1,7 @@
 const fetch = require('node-fetch');
 const { ClientBuilder } = require('@commercetools/sdk-client-v2');
 const { projectKey } = require('../constant');
+const { default: sdkAuth } = require('@commercetools/sdk-auth');
 require('dotenv').config();
 
 console.log(process.env.CTP_CLIENT_SECRET);
@@ -24,4 +25,13 @@ const ctpClient = new ClientBuilder()
   .withHttpMiddleware(httpMiddlewareOptions)
   .build();
 
-module.exports = { ctpClient };
+const authClient = new sdkAuth({
+  host: process.env.CTP_AUTH_URL,
+  projectKey,
+  credentials: {
+    clientId: process.env.CTP_CLIENT_ID,
+    clientSecret: process.env.CTP_CLIENT_SECRET,
+  },
+  fetch,
+});
+module.exports = { ctpClient, authClient };

@@ -1,4 +1,3 @@
-
 const typeDefs = `#graphql
 
   scalar JSON
@@ -15,12 +14,27 @@ const typeDefs = `#graphql
     verifyExistUser(email: String!, phoneNumber: String!): JSON
     createCustomer(tokenId: String!): JSON
     verifySocialUser(token:String!):JSON
+    generateToken(token:String!):JSON
+    createCart(productId:String!):JSON
+    addItemsToCart(productId:String!,cartId:String!,versionId:String!):JSON
+    removeItemFromCart(lineItemId:String!,cartId:String!,versionId:String!):JSON
+    addEmailIdAsGuest(cartId:String!,versionId:String!,email:String!):JSON
+    addShippingAddress(shippingAddresInput:shippingAddress,cartId:String!,versionId:String!):JSON
   }
 
   type Suggestion {
     text: String
   }
 
+  input shippingAddress{
+    firstName:String
+    lastName:String
+    streetName:String
+    country:String
+    city:String
+    postalCode:String
+    phone:String
+  }
   type Product {
     id: String
     name: Name

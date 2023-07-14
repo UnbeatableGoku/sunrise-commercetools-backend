@@ -1,3 +1,5 @@
+const { authClient } = require('../config/buildClient');
+const { apiRoot } = require('../config/ctpClient');
 const { firebaseAuth } = require('../config/firebseConfig');
 const {
   getProductService,
@@ -8,6 +10,12 @@ const {
   checkSocialUserService,
   updateUserEmailService,
   deleteSocialUserService,
+  addToCartService,
+  addFirstItemToCartService,
+  addLineItemsService,
+  removeCartItemService,
+  addEmailIdAsGuestUserService,
+  addShippingAddressService,
 } = require('../services/product-service');
 /**
  * Retrieves a list of products.
@@ -147,14 +155,22 @@ const addNewCustomer = async (parent, { tokenId }, { res }) => {
   try {
     console.log(tokenId);
     const decode = await firebaseAuth.verifyIdToken(tokenId);
-    console.log('this is decode --------------', decode);
+    const user = await firebaseAuth.getUser(decode.uid);
+    console.log('this is decode --------------', user);
+
     const result = await createCustomerService(
-      decode.email,
-      decode.phone_number,
-      decode.name
+      user.email,
+      user.phoneNumber || user.phone_number,
+      user.displayName || user.name
     );
-    console.log(result);
-    return result;
+    console.log(result, '-------------------------this is result ');
+    const accesstoken = await authClient.customerPasswordFlow({
+      username: user.email,
+      password: user.email,
+    });
+    const cookieOption = { httpOnly: true, sameSite: 'none', secure: true };
+    res.cookie('token', accesstoken.access_token, cookieOption);
+    return accesstoken;
   } catch (error) {
     console.log(error);
   }
@@ -166,20 +182,77 @@ const checkSocialUser = async (parent, { token }) => {
     const uid = decode.uid;
     const email = user.providerData[0].email;
     const result = await checkSocialUserService(email);
-
-    if (!result) {
-      const userWithUpdatedEmail = await updateUserEmailService(uid, email);
-      console.log(userWithUpdatedEmail, 'updateSOcialEmail successfully');
-      return { userUpdatedWithEmail: true };
-    } else {
+    console.log(result, 'this is result ');
+    if (result > 1) {
       const deleteSocialUser = await deleteSocialUserService(uid);
       console.log(deleteSocialUser, 'deleteSocialUser successfully');
-      return { userDeleted: true };
+      return { signupWithSocial: false };
+    }
+    if (result === 1) {
+      return { loginWithSocial: true };
+    } else {
+      const userWithUpdatedEmail = await updateUserEmailService(uid, email);
+      console.log(userWithUpdatedEmail, 'updateSocialEmail successfully');
+      return { signupWithSocial: true };
     }
   } catch (error) {
     console.log(error);
     return error;
   }
+};
+
+const generateCustomerToken = async (parent, { token }, { req, res }) => {
+  try {
+    const decode = await firebaseAuth.verifyIdToken(token);
+    const user = await firebaseAuth.getUser(decode.uid);
+    const accesstoken = await authClient.customerPasswordFlow({
+      username: user.email,
+      password: user.email,
+    });
+    const cookieOption = { httpOnly: true, sameSite: 'none', secure: true };
+    res.cookie('token', accesstoken.access_token, cookieOption);
+    return accesstoken;
+  } catch (error) {
+    console.log(error);
+  }
+};
+const addFirstItemToCart = async (parent, { productId }) => {
+  try {
+    const items = await addFirstItemToCartService(productId);
+    console.log(items);
+    return items;
+  } catch (error) {
+    console.log(error);
+  }
+};
+const addLineItems = async (parent, { productId, cartId, versionId }) => {
+  const result = await addLineItemsService(productId, cartId, versionId);
+  return result;
+};
+const removeCartItem = async (parent, { lineItemId, cartId, versionId }) => {
+  const result = await removeCartItemService(lineItemId, cartId, versionId);
+  return result;
+};
+const addEmailIdAsGuestUser = async (parent, { cartId, versionId, email }) => {
+  const result = await addEmailIdAsGuestUserService(cartId, versionId, email);
+  return result;
+};
+const addShippingAddressForUser = async (
+  parent,
+  { shippingAddresInput, cartId, versionId }
+) => {
+  const result = await addShippingAddressService(
+    cartId,
+    versionId,
+    shippingAddresInput.firstName,
+    shippingAddresInput.lastName,
+    shippingAddresInput.streetName,
+    shippingAddresInput.country,
+    shippingAddresInput.city,
+    shippingAddresInput.postalCode,
+    shippingAddresInput.phone
+  );
+  return result;
 };
 const resolvers = {
   Query: {
@@ -193,6 +266,12 @@ const resolvers = {
     verifyExistUser: checkExistUser,
     createCustomer: addNewCustomer,
     verifySocialUser: checkSocialUser,
+    generateToken: generateCustomerToken,
+    createCart: addFirstItemToCart,
+    addItemsToCart: addLineItems,
+    removeItemFromCart: removeCartItem,
+    addEmailIdAsGuest: addEmailIdAsGuestUser,
+    addShippingAddress: addShippingAddressForUser,
   },
 };
 
