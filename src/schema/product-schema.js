@@ -7,6 +7,7 @@ const typeDefs = `#graphql
     singleProduct(id: String!): Product
     searchProducts(query: String): [Product]
     searchSuggestion(keyword: String!): [Suggestion]
+
   }
 
   type Mutation {
@@ -20,6 +21,8 @@ const typeDefs = `#graphql
     removeItemFromCart(lineItemId:String!,cartId:String!,versionId:String!):JSON
     addEmailIdAsGuest(cartId:String!,versionId:String!,email:String!):JSON
     addShippingAddress(shippingAddresInput:shippingAddress,cartId:String!,versionId:String!):JSON
+    getCartById(cartId:String!):JSON
+    changeCartItemsQty(cartId:String!,versionId:String!,lineItemId:String!,quantity:Int!):JSON
   }
 
   type Suggestion {

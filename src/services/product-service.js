@@ -1,6 +1,6 @@
-const { apiRoot } = require('../config/ctpClient');
-const { v4: uuidv4, version } = require('uuid');
-const { firebaseAuth } = require('../config/firebseConfig');
+const { apiRoot } = require("../config/ctpClient");
+const { v4: uuidv4, version } = require("uuid");
+const { firebaseAuth } = require("../config/firebseConfig");
 /**
  * Retrieves a list of products and assigns a unique ID to each master variant.
  *
@@ -56,7 +56,7 @@ const getSearchProductsService = async (query) => {
     const products = await apiRoot
       .productProjections()
       .search()
-      .get({ queryArgs: { 'text.en': query, limit: 20, fuzzy: true } })
+      .get({ queryArgs: { "text.en": query, limit: 20, fuzzy: true } })
       .execute();
     const productsWithId = products.body.results.map((product) => ({
       ...product,
@@ -85,12 +85,12 @@ const getSearchSuggestionService = async (keyword) => {
       .suggest()
       .get({
         queryArgs: {
-          'searchKeywords.en': keyword,
+          "searchKeywords.en": keyword,
           fuzzy: true,
         },
       })
       .execute();
-    return suggestion.body['searchKeywords.en'];
+    return suggestion.body["searchKeywords.en"];
   } catch (error) {
     console.log(error);
     throw error;
@@ -104,7 +104,7 @@ const getSearchSuggestionService = async (keyword) => {
  * @returns {Promise<Object>} The newly created customer.
  * @throws {Error} If an error occurs during the API call.
  */
-const createCustomerService = async (email, phoneNumber = '', name) => {
+const createCustomerService = async (email, phoneNumber = "", name) => {
   try {
     const result = await apiRoot
       .me()
@@ -116,8 +116,8 @@ const createCustomerService = async (email, phoneNumber = '', name) => {
           firstName: name,
           custom: {
             type: {
-              key: 'customer-mobile-no',
-              typeId: 'type',
+              key: "customer-mobile-no",
+              typeId: "type",
             },
             fields: {
               phoneNo: { en: phoneNumber },
@@ -131,10 +131,18 @@ const createCustomerService = async (email, phoneNumber = '', name) => {
     console.log(error);
   }
 };
+
+/**
+ * Checks if a user with the given email exists and determines the number of authentication providers associated with that user.
+ *
+ * @param {string} email The email of the user to check.
+ * @returns {Promise<number>} The number of authentication providers associated with the user.
+ * @throws {Error} If an error occurs during the API call.
+ */
 const checkSocialUserService = async (email) => {
   try {
     const userWithEmail = await firebaseAuth.getUserByEmail(email);
-    console.log(userWithEmail, 'this is updated user ');
+    console.log(userWithEmail, "this is updated user ");
     if (userWithEmail.providerData.length === 1) {
       return 1;
     } else if (userWithEmail.providerData.length > 1) {
@@ -146,6 +154,15 @@ const checkSocialUserService = async (email) => {
     console.log(error);
   }
 };
+
+/**
+ * Updates the email of a user identified by their unique ID.
+ *
+ * @param {string} uid The unique ID of the user.
+ * @param {string} email The new email for the user.
+ * @returns {Promise<Object>} The updated user.
+ * @throws {Error} If an error occurs during the API call.
+ */
 const updateUserEmailService = async (uid, email) => {
   try {
     const updatedUser = await firebaseAuth.updateUser(uid, {
@@ -156,6 +173,14 @@ const updateUserEmailService = async (uid, email) => {
     console.log(error);
   }
 };
+
+/**
+ * Deletes a user identified by their unique ID.
+ *
+ * @param {string} uid The unique ID of the user to delete.
+ * @returns {Promise<Object>} The deleted user.
+ * @throws {Error} If an error occurs during the API call.
+ */
 const deleteSocialUserService = async (uid) => {
   try {
     const deleteSocialUser = await firebaseAuth.deleteUser(uid);
@@ -164,10 +189,18 @@ const deleteSocialUserService = async (uid) => {
     console.log(error);
   }
 };
+
+/**
+ * Adds the first item to a cart.
+ *
+ * @param {string} productId The ID of the product to add to the cart.
+ * @returns {Promise<Object>} The created cart.
+ * @throws {Error} If an error occurs during the API call.
+ */
 const addFirstItemToCartService = async (productId) => {
   try {
     const cartItemDraft = {
-      currency: 'EUR',
+      currency: "EUR",
       quantity: 1,
       lineItems: [
         {
@@ -185,6 +218,16 @@ const addFirstItemToCartService = async (productId) => {
     console.log(error);
   }
 };
+
+/**
+ * Adds line items to a cart.
+ *
+ * @param {string} productId The ID of the product to add as a line item.
+ * @param {string} cartId The ID of the cart to add the line items to.
+ * @param {string} versionId The version ID of the cart.
+ * @returns {Promise<Object>} The updated cart.
+ * @throws {Error} If an error occurs during the API call.
+ */
 const addLineItemsService = async (productId, cartId, versionId) => {
   try {
     const updatedCart = await apiRoot
@@ -195,7 +238,7 @@ const addLineItemsService = async (productId, cartId, versionId) => {
           version: parseInt(versionId),
           actions: [
             {
-              action: 'addLineItem',
+              action: "addLineItem",
               productId: productId,
               variantId: 1,
             },
@@ -210,6 +253,15 @@ const addLineItemsService = async (productId, cartId, versionId) => {
   }
 };
 
+/**
+ * Removes a line item from a cart.
+ *
+ * @param {string} lineItemId The ID of the line item to remove.
+ * @param {string} cartId The ID of the cart.
+ * @param {string} versionId The version ID of the cart.
+ * @returns {Promise<Object>} The updated cart.
+ * @throws {Error} If an error occurs during the API call.
+ */
 const removeCartItemService = async (lineItemId, cartId, versionId) => {
   try {
     const updatedCart = await apiRoot
@@ -220,20 +272,29 @@ const removeCartItemService = async (lineItemId, cartId, versionId) => {
           version: parseInt(versionId),
           actions: [
             {
-              action: 'removeLineItem',
+              action: "removeLineItem",
               lineItemId,
-              quantity: 1,
             },
           ],
         },
       })
       .execute();
+    return updatedCart.body;
     console.log(updatedCart.body);
   } catch (error) {
     console.log(error);
   }
 };
 
+/**
+ * Adds an email ID to a guest user's cart.
+ *
+ * @param {string} cartId The ID of the cart.
+ * @param {string} versionId The version ID of the cart.
+ * @param {string} email The email ID to add.
+ * @returns {Promise<Object>} The updated cart.
+ * @throws {Error} If an error occurs during the API call.
+ */
 const addEmailIdAsGuestUserService = async (cartId, versionId, email) => {
   try {
     const result = await apiRoot
@@ -244,7 +305,7 @@ const addEmailIdAsGuestUserService = async (cartId, versionId, email) => {
           version: parseInt(versionId),
           actions: [
             {
-              action: 'setCustomerEmail',
+              action: "setCustomerEmail",
               email,
             },
           ],
@@ -256,6 +317,22 @@ const addEmailIdAsGuestUserService = async (cartId, versionId, email) => {
     console.log(error);
   }
 };
+
+/**
+ * Adds a shipping address to a cart.
+ *
+ * @param {string} cartId The ID of the cart.
+ * @param {string} versionId The version ID of the cart.
+ * @param {string} firstName The first name of the recipient.
+ * @param {string} lastName The last name of the recipient.
+ * @param {string} streetName The street name of the address.
+ * @param {string} country The country of the address.
+ * @param {string} city The city of the address.
+ * @param {string} postalCode The postal code of the address.
+ * @param {string} phone The phone number of the recipient.
+ * @returns {Promise<Object>} The updated cart.
+ * @throws {Error} If an error occurs during the API call.
+ */
 const addShippingAddressService = async (
   cartId,
   versionId,
@@ -263,13 +340,13 @@ const addShippingAddressService = async (
   lastName,
   streetName,
   country,
-  state,
   city,
   postalCode,
   phone
 ) => {
   try {
-    console.log(cartId,
+    console.log(
+      cartId,
       versionId,
       firstName,
       lastName,
@@ -277,7 +354,8 @@ const addShippingAddressService = async (
       country,
       city,
       postalCode,
-      phone);
+      phone
+    );
     const result = await apiRoot
       .carts()
       .withId({ ID: cartId })
@@ -286,7 +364,7 @@ const addShippingAddressService = async (
           version: parseInt(versionId),
           actions: [
             {
-              action: 'setShippingAddress',
+              action: "setShippingAddress",
               address: {
                 firstName,
                 lastName,
@@ -306,6 +384,65 @@ const addShippingAddressService = async (
     console.log(error);
   }
 };
+
+/**
+ * Retrieves a cart specified by its ID.
+ *
+ * @param {string} cartId The ID of the cart.
+ * @returns {Promise<Object>} The cart.
+ * @throws {Error} If an error occurs during the API call.
+ */
+
+const getCartByIdService = async (cartId) => {
+  try {
+    const result = await apiRoot.carts().withId({ ID: cartId }).get().execute();
+    console.log(result);
+    return result.body;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+/**
+ * Changes the quantity of a line item in a cart.
+ *
+ * @param {string} cartId The ID of the cart.
+ * @param {string} versionId The version ID of the cart.
+ * @param {string} lineItemId The ID of the line item.
+ * @param {number} quantity The new quantity for the line item.
+ * @returns {Promise<Object>} The updated cart.
+ * @throws {Error} If an error occurs during the API call.
+ */
+const changeLineItemsQtyService = async (
+  cartId,
+  versionId,
+  lineItemId,
+  quantity
+) => {
+  try {
+    console.log(cartId, versionId, lineItemId, quantity, "this is arguments");
+
+    const result = await apiRoot
+      .carts()
+      .withId({ ID: cartId })
+      .post({
+        body: {
+          version: parseInt(versionId),
+          actions: [
+            {
+              action: "changeLineItemQuantity",
+              lineItemId: lineItemId,
+              quantity,
+            },
+          ],
+        },
+      })
+      .execute();
+    return result;
+  } catch (error) {
+    console.log(error);
+  }
+};
 // Export the functions for external use
 module.exports = {
   getProductService,
@@ -321,4 +458,6 @@ module.exports = {
   removeCartItemService,
   addEmailIdAsGuestUserService,
   addShippingAddressService,
+  getCartByIdService,
+  changeLineItemsQtyService,
 };

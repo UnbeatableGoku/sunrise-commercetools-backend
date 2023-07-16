@@ -1,6 +1,6 @@
-const { authClient } = require('../config/buildClient');
-const { apiRoot } = require('../config/ctpClient');
-const { firebaseAuth } = require('../config/firebseConfig');
+const { authClient } = require("../config/buildClient");
+const { apiRoot } = require("../config/ctpClient");
+const { firebaseAuth } = require("../config/firebseConfig");
 const {
   getProductService,
   getProductDetailsService,
@@ -16,7 +16,9 @@ const {
   removeCartItemService,
   addEmailIdAsGuestUserService,
   addShippingAddressService,
-} = require('../services/product-service');
+  getCartByIdService,
+  changeLineItemsQtyService,
+} = require("../services/product-service");
 /**
  * Retrieves a list of products.
  *
@@ -29,7 +31,7 @@ const getProducts = async () => {
     return products;
   } catch (error) {
     console.error(error);
-    throw new Error('Failed to fetch products');
+    throw new Error("Failed to fetch products");
   }
 };
 
@@ -48,7 +50,7 @@ const getProductDetails = async (parent, { id }) => {
     return details;
   } catch (error) {
     console.log(error);
-    throw new Error('Failed to fetch product details');
+    throw new Error("Failed to fetch product details");
   }
 };
 
@@ -66,7 +68,7 @@ const getSearchedProducts = async (parent, { query }) => {
     return products;
   } catch (error) {
     console.log(error);
-    throw new Error('Failed to fetch products');
+    throw new Error("Failed to fetch products");
   }
 };
 
@@ -84,7 +86,7 @@ const getSearchSuggestion = async (parent, { keyword }) => {
     return suggestion;
   } catch (error) {
     console.log(error);
-    throw new Error('Failed to fetch the suggestion');
+    throw new Error("Failed to fetch the suggestion");
   }
 };
 
@@ -99,7 +101,7 @@ const getSearchSuggestion = async (parent, { keyword }) => {
 const getAuthentication = async (parent, { token }) => {
   try {
     console.log(token);
-    return 'hello world';
+    return "hello world";
   } catch (error) {
     console.log(error);
   }
@@ -132,7 +134,7 @@ const checkExistUser = async (parent, { email, phoneNumber }) => {
       }
     } catch (error) {
       console.log(error);
-      if (error.code === 'auth/user-not-found') {
+      if (error.code === "auth/user-not-found") {
         return {
           userExist: false,
         };
@@ -156,25 +158,35 @@ const addNewCustomer = async (parent, { tokenId }, { res }) => {
     console.log(tokenId);
     const decode = await firebaseAuth.verifyIdToken(tokenId);
     const user = await firebaseAuth.getUser(decode.uid);
-    console.log('this is decode --------------', user);
+    console.log("this is decode --------------", user);
 
     const result = await createCustomerService(
       user.email,
       user.phoneNumber || user.phone_number,
       user.displayName || user.name
     );
-    console.log(result, '-------------------------this is result ');
+    console.log(result, "-------------------------this is result ");
     const accesstoken = await authClient.customerPasswordFlow({
       username: user.email,
       password: user.email,
     });
-    const cookieOption = { httpOnly: true, sameSite: 'none', secure: true };
-    res.cookie('token', accesstoken.access_token, cookieOption);
+    const cookieOption = { httpOnly: true, sameSite: "none", secure: true };
+    res.cookie("token", accesstoken.access_token, cookieOption);
     return accesstoken;
   } catch (error) {
     console.log(error);
+    throw new Error("Failed to add new customer");
   }
 };
+
+/**
+ * Checks if a user with the given token is a social user and returns the corresponding response.
+ *
+ * @param {Object} parent The parent object provided by the GraphQL resolver.
+ * @param {Object} args The arguments provided for the resolver, containing the token.
+ * @returns {Promise<Object>} The response indicating the user's status.
+ * @throws {Error} If an error occurs during the process.
+ */
 const checkSocialUser = async (parent, { token }) => {
   try {
     const decode = await firebaseAuth.verifyIdToken(token);
@@ -182,25 +194,34 @@ const checkSocialUser = async (parent, { token }) => {
     const uid = decode.uid;
     const email = user.providerData[0].email;
     const result = await checkSocialUserService(email);
-    console.log(result, 'this is result ');
+    console.log(result, "this is result ");
     if (result > 1) {
       const deleteSocialUser = await deleteSocialUserService(uid);
-      console.log(deleteSocialUser, 'deleteSocialUser successfully');
+      console.log(deleteSocialUser, "deleteSocialUser successfully");
       return { signupWithSocial: false };
     }
     if (result === 1) {
       return { loginWithSocial: true };
     } else {
       const userWithUpdatedEmail = await updateUserEmailService(uid, email);
-      console.log(userWithUpdatedEmail, 'updateSocialEmail successfully');
+      console.log(userWithUpdatedEmail, "updateSocialEmail successfully");
       return { signupWithSocial: true };
     }
   } catch (error) {
     console.log(error);
-    return error;
+    throw new Error("Failed to check social user");
   }
 };
 
+/**
+ * Generates a customer token for the authenticated user.
+ *
+ * @param {Object} parent The parent object provided by the GraphQL resolver.
+ * @param {Object} args The arguments provided for the resolver, containing the token.
+ * @param {Object} context The context object provided by the GraphQL resolver, containing the request and response objects.
+ * @returns {Promise<Object>} The generated customer token.
+ * @throws {Error} If an error occurs during the process.
+ */
 const generateCustomerToken = async (parent, { token }, { req, res }) => {
   try {
     const decode = await firebaseAuth.verifyIdToken(token);
@@ -209,13 +230,23 @@ const generateCustomerToken = async (parent, { token }, { req, res }) => {
       username: user.email,
       password: user.email,
     });
-    const cookieOption = { httpOnly: true, sameSite: 'none', secure: true };
-    res.cookie('token', accesstoken.access_token, cookieOption);
+    const cookieOption = { httpOnly: true, sameSite: "none", secure: true };
+    res.cookie("token", accesstoken.access_token, cookieOption);
     return accesstoken;
   } catch (error) {
     console.log(error);
+    throw new Error("Failed to generate customer token");
   }
 };
+
+/**
+ * Adds the first item to a cart.
+ *
+ * @param {Object} parent The parent object provided by the GraphQL resolver.
+ * @param {Object} args The arguments provided for the resolver, containing the product ID.
+ * @returns {Promise<Object>} The created cart.
+ * @throws {Error} If an error occurs while adding the item to the cart.
+ */
 const addFirstItemToCart = async (parent, { productId }) => {
   try {
     const items = await addFirstItemToCartService(productId);
@@ -223,20 +254,62 @@ const addFirstItemToCart = async (parent, { productId }) => {
     return items;
   } catch (error) {
     console.log(error);
+    throw new Error("Failed to add first item to cart");
   }
 };
+
+/**
+ * Adds line items to a cart.
+ *
+ * @param {Object} parent The parent object provided by the GraphQL resolver.
+ * @param {Object} args The arguments provided for the resolver, containing the product ID, cart ID, and version ID.
+ * @returns {Promise<Object>} The updated cart.
+ * @throws {Error} If an error occurs while adding the line items.
+ */
 const addLineItems = async (parent, { productId, cartId, versionId }) => {
-  const result = await addLineItemsService(productId, cartId, versionId);
-  return result;
+  try {
+    const result = await addLineItemsService(productId, cartId, versionId);
+    return result;
+  } catch (error) {
+    console.log(error);
+    throw new Error("Failed to add Line items");
+  }
 };
+
+/**
+ * Removes a line item from a cart.
+ *
+ * @param {Object} parent The parent object provided by the GraphQL resolver.
+ * @param {Object} args The arguments provided for the resolver, containing the line item ID, cart ID, and version ID.
+ * @returns {Promise<Object>} The updated cart.
+ * @throws {Error} If an error occurs while removing the line item.
+ */
 const removeCartItem = async (parent, { lineItemId, cartId, versionId }) => {
   const result = await removeCartItemService(lineItemId, cartId, versionId);
   return result;
 };
+
+/**
+ * Adds an email ID as a guest user to a cart.
+ *
+ * @param {Object} parent The parent object provided by the GraphQL resolver.
+ * @param {Object} args The arguments provided for the resolver, containing the cart ID, version ID, and email.
+ * @returns {Promise<Object>} The updated cart.
+ * @throws {Error} If an error occurs while adding the email ID.
+ */
 const addEmailIdAsGuestUser = async (parent, { cartId, versionId, email }) => {
   const result = await addEmailIdAsGuestUserService(cartId, versionId, email);
   return result;
 };
+
+/**
+ * Adds a shipping address for a user to a cart.
+ *
+ * @param {Object} parent The parent object provided by the GraphQL resolver.
+ * @param {Object} args The arguments provided for the resolver, containing the shipping address input, cart ID, and version ID.
+ * @returns {Promise<Object>} The updated cart.
+ * @throws {Error} If an error occurs while adding the shipping address.
+ */
 const addShippingAddressForUser = async (
   parent,
   { shippingAddresInput, cartId, versionId }
@@ -253,6 +326,49 @@ const addShippingAddressForUser = async (
     shippingAddresInput.phone
   );
   return result;
+};
+
+/**
+ * Retrieves the items in a cart specified by its ID.
+ *
+ * @param {Object} parent The parent object provided by the GraphQL resolver.
+ * @param {Object} args The arguments provided for the resolver, containing the cart ID.
+ * @returns {Promise<Object>} The cart items.
+ * @throws {Error} If an error occurs while fetching the cart items.
+ */
+const getCartItems = async (parent, { cartId }) => {
+  try {
+    const result = await getCartByIdService(cartId);
+    return result;
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+};
+
+/**
+ * Changes the quantity of a line item in a cart.
+ *
+ * @param {Object} parent The parent object provided by the GraphQL resolver.
+ * @param {Object} args The arguments provided for the resolver, containing the cart ID, version ID, line item ID, and quantity.
+ * @returns {Promise<Object>} The updated cart.
+ * @throws {Error} If an error occurs while changing the quantity.
+ */
+const changeLineItemsQty = async (
+  parent,
+  { cartId, versionId, lineItemId, quantity }
+) => {
+  try {
+    const result = await changeLineItemsQtyService(
+      cartId,
+      versionId,
+      lineItemId,
+      quantity
+    );
+    return result;
+  } catch (error) {
+    console.log(error);
+  }
 };
 const resolvers = {
   Query: {
@@ -272,6 +388,8 @@ const resolvers = {
     removeItemFromCart: removeCartItem,
     addEmailIdAsGuest: addEmailIdAsGuestUser,
     addShippingAddress: addShippingAddressForUser,
+    getCartById: getCartItems,
+    changeCartItemsQty: changeLineItemsQty,
   },
 };
 
