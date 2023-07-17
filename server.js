@@ -22,7 +22,13 @@ const httpServer = http.createServer(app);
   app.use(
     '/',
     bodyParser.json({ limit: '50mb' }),
-    cors({ origin: ['http://localhost:3000',"https://sunrise-commercetools-frontend.vercel.app/product"], credentials: true }),
+    cors({
+      origin: [
+        'http://localhost:3000',
+        'https://sunrise-commercetools-frontend.vercel.app',
+      ],
+      credentials: true,
+    }),
 
     expressMiddleware(server, {
       context: async ({ req, res }) => ({ req, res }),
