@@ -1,6 +1,6 @@
-const { authClient } = require("../config/buildClient");
-const { apiRoot } = require("../config/ctpClient");
-const { firebaseAuth } = require("../config/firebseConfig");
+const { authClient } = require('../config/buildClient');
+const { apiRoot } = require('../config/ctpClient');
+const { firebaseAuth } = require('../config/firebseConfig');
 const {
   getProductService,
   getProductDetailsService,
@@ -18,7 +18,14 @@ const {
   addShippingAddressService,
   getCartByIdService,
   changeLineItemsQtyService,
-} = require("../services/product-service");
+  addShippingMethodForUserService,
+  addBilligAddressService,
+  getTotalCartItemsService,
+  generateOrderByCartService,
+  decodeTokenService,
+  getOrderListService,
+  addEmailToGuestUserOrderService,
+} = require('../services/product-service');
 /**
  * Retrieves a list of products.
  *
@@ -31,7 +38,7 @@ const getProducts = async () => {
     return products;
   } catch (error) {
     console.error(error);
-    throw new Error("Failed to fetch products");
+    throw new Error('Failed to fetch products');
   }
 };
 
@@ -50,7 +57,7 @@ const getProductDetails = async (parent, { id }) => {
     return details;
   } catch (error) {
     console.log(error);
-    throw new Error("Failed to fetch product details");
+    throw new Error('Failed to fetch product details');
   }
 };
 
@@ -68,7 +75,7 @@ const getSearchedProducts = async (parent, { query }) => {
     return products;
   } catch (error) {
     console.log(error);
-    throw new Error("Failed to fetch products");
+    throw new Error('Failed to fetch products');
   }
 };
 
@@ -86,7 +93,7 @@ const getSearchSuggestion = async (parent, { keyword }) => {
     return suggestion;
   } catch (error) {
     console.log(error);
-    throw new Error("Failed to fetch the suggestion");
+    throw new Error('Failed to fetch the suggestion');
   }
 };
 
@@ -101,7 +108,7 @@ const getSearchSuggestion = async (parent, { keyword }) => {
 const getAuthentication = async (parent, { token }) => {
   try {
     console.log(token);
-    return "hello world";
+    return 'hello world';
   } catch (error) {
     console.log(error);
   }
@@ -134,7 +141,7 @@ const checkExistUser = async (parent, { email, phoneNumber }) => {
       }
     } catch (error) {
       console.log(error);
-      if (error.code === "auth/user-not-found") {
+      if (error.code === 'auth/user-not-found') {
         return {
           userExist: false,
         };
@@ -158,24 +165,24 @@ const addNewCustomer = async (parent, { tokenId }, { res }) => {
     console.log(tokenId);
     const decode = await firebaseAuth.verifyIdToken(tokenId);
     const user = await firebaseAuth.getUser(decode.uid);
-    console.log("this is decode --------------", user);
+    console.log('this is decode --------------', user);
 
     const result = await createCustomerService(
       user.email,
       user.phoneNumber || user.phone_number,
       user.displayName || user.name
     );
-    console.log(result, "-------------------------this is result ");
+    console.log(result, '-------------------------this is result ');
     const accesstoken = await authClient.customerPasswordFlow({
       username: user.email,
       password: user.email,
     });
-    const cookieOption = { httpOnly: true, sameSite: "none", secure: true };
-    res.cookie("token", accesstoken.access_token, cookieOption);
+    const cookieOption = { httpOnly: true, sameSite: 'none', secure: true };
+    res.cookie('token', accesstoken.access_token, cookieOption);
     return accesstoken;
   } catch (error) {
     console.log(error);
-    throw new Error("Failed to add new customer");
+    throw new Error('Failed to add new customer');
   }
 };
 
@@ -194,22 +201,22 @@ const checkSocialUser = async (parent, { token }) => {
     const uid = decode.uid;
     const email = user.providerData[0].email;
     const result = await checkSocialUserService(email);
-    console.log(result, "this is result ");
+    console.log(result, 'this is result ');
     if (result > 1) {
       const deleteSocialUser = await deleteSocialUserService(uid);
-      console.log(deleteSocialUser, "deleteSocialUser successfully");
+      console.log(deleteSocialUser, 'deleteSocialUser successfully');
       return { signupWithSocial: false };
     }
     if (result === 1) {
       return { loginWithSocial: true };
     } else {
       const userWithUpdatedEmail = await updateUserEmailService(uid, email);
-      console.log(userWithUpdatedEmail, "updateSocialEmail successfully");
+      console.log(userWithUpdatedEmail, 'updateSocialEmail successfully');
       return { signupWithSocial: true };
     }
   } catch (error) {
     console.log(error);
-    throw new Error("Failed to check social user");
+    throw new Error('Failed to check social user');
   }
 };
 
@@ -230,12 +237,12 @@ const generateCustomerToken = async (parent, { token }, { req, res }) => {
       username: user.email,
       password: user.email,
     });
-    const cookieOption = { httpOnly: true, sameSite: "none", secure: true };
-    res.cookie("token", accesstoken.access_token, cookieOption);
+    const cookieOption = { httpOnly: true, sameSite: 'none', secure: true };
+    res.cookie('token', accesstoken.access_token, cookieOption);
     return accesstoken;
   } catch (error) {
     console.log(error);
-    throw new Error("Failed to generate customer token");
+    throw new Error('Failed to generate customer token');
   }
 };
 
@@ -254,7 +261,7 @@ const addFirstItemToCart = async (parent, { productId }) => {
     return items;
   } catch (error) {
     console.log(error);
-    throw new Error("Failed to add first item to cart");
+    throw new Error('Failed to add first item to cart');
   }
 };
 
@@ -272,7 +279,7 @@ const addLineItems = async (parent, { productId, cartId, versionId }) => {
     return result;
   } catch (error) {
     console.log(error);
-    throw new Error("Failed to add Line items");
+    throw new Error('Failed to add Line items');
   }
 };
 
@@ -370,12 +377,97 @@ const changeLineItemsQty = async (
     console.log(error);
   }
 };
+
+const addShippingMethodForUser = async (
+  parent,
+  { cartId, versionId, shippingMethodId }
+) => {
+  try {
+    const result = await addShippingMethodForUserService(
+      cartId,
+      versionId,
+      shippingMethodId
+    );
+    return result;
+  } catch (error) {
+    console.log(error);
+    throw new Error('Failed To add shipping method');
+  }
+};
+
+const addBillingAddressForUser = async (
+  parent,
+  { shippingAddresInput, cartId, versionId }
+) => {
+  try {
+    const result = await addBilligAddressService(
+      cartId,
+      versionId,
+      shippingAddresInput.firstName,
+      shippingAddresInput.lastName,
+      shippingAddresInput.streetName,
+      shippingAddresInput.country,
+      shippingAddresInput.city,
+      shippingAddresInput.postalCode,
+      shippingAddresInput.phone
+    );
+    return result;
+  } catch (error) {
+    console.log(error);
+    throw new Error('Failed to add billingAddress');
+  }
+};
+const getTotalCartItems = async (parent, { cartId }) => {
+  try {
+    const result = await getTotalCartItemsService(cartId);
+    return result;
+  } catch (error) {
+    console.log(error);
+    throw new Error('failed to get total cart items');
+  }
+};
+
+const generateOrderByCart = async (parent, { cartId, versionID }) => {
+  try {
+    const result = await generateOrderByCartService(cartId, versionID);
+    return result;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const verifyUserByToken = async (parent, args, { req, res }) => {
+  try {
+    console.log(req.cookies.token);
+    const result = await decodeTokenService(req.cookies.token);
+    if (result.statusCode === 200) {
+      console.log('entering in getOrderList Service--------------------------');
+      const orderList = await getOrderListService(result.body.email);
+      if (orderList.statusCode === 200) {
+        console.log(
+          'entering in addEmaiiltogusetuserorder Service--------------------------'
+        );
+
+        const updatedOrderList = await addEmailToGuestUserOrderService(
+          orderList.body.results,
+          result.body.id
+        );
+        return updatedOrderList;
+      }
+      return orderList;
+    }
+    return result;
+  } catch (error) {
+    console.log(error);
+  }
+};
 const resolvers = {
   Query: {
     products: getProducts,
     singleProduct: getProductDetails,
     searchProducts: getSearchedProducts,
     searchSuggestion: getSearchSuggestion,
+    verifyUserByTokenId: verifyUserByToken,
   },
   Mutation: {
     auth: getAuthentication,
@@ -390,6 +482,10 @@ const resolvers = {
     addShippingAddress: addShippingAddressForUser,
     getCartById: getCartItems,
     changeCartItemsQty: changeLineItemsQty,
+    addShippingMethod: addShippingMethodForUser,
+    addBillingAddress: addBillingAddressForUser,
+    getCartItems: getTotalCartItems,
+    generateOrderByCartID: generateOrderByCart,
   },
 };
 

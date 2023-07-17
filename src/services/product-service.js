@@ -1,6 +1,6 @@
-const { apiRoot } = require("../config/ctpClient");
-const { v4: uuidv4, version } = require("uuid");
-const { firebaseAuth } = require("../config/firebseConfig");
+const { apiRoot } = require('../config/ctpClient');
+const { v4: uuidv4, version } = require('uuid');
+const { firebaseAuth } = require('../config/firebseConfig');
 /**
  * Retrieves a list of products and assigns a unique ID to each master variant.
  *
@@ -56,7 +56,7 @@ const getSearchProductsService = async (query) => {
     const products = await apiRoot
       .productProjections()
       .search()
-      .get({ queryArgs: { "text.en": query, limit: 20, fuzzy: true } })
+      .get({ queryArgs: { 'text.en': query, limit: 20, fuzzy: true } })
       .execute();
     const productsWithId = products.body.results.map((product) => ({
       ...product,
@@ -85,12 +85,12 @@ const getSearchSuggestionService = async (keyword) => {
       .suggest()
       .get({
         queryArgs: {
-          "searchKeywords.en": keyword,
+          'searchKeywords.en': keyword,
           fuzzy: true,
         },
       })
       .execute();
-    return suggestion.body["searchKeywords.en"];
+    return suggestion.body['searchKeywords.en'];
   } catch (error) {
     console.log(error);
     throw error;
@@ -104,7 +104,7 @@ const getSearchSuggestionService = async (keyword) => {
  * @returns {Promise<Object>} The newly created customer.
  * @throws {Error} If an error occurs during the API call.
  */
-const createCustomerService = async (email, phoneNumber = "", name) => {
+const createCustomerService = async (email, phoneNumber = '', name) => {
   try {
     const result = await apiRoot
       .me()
@@ -116,8 +116,8 @@ const createCustomerService = async (email, phoneNumber = "", name) => {
           firstName: name,
           custom: {
             type: {
-              key: "customer-mobile-no",
-              typeId: "type",
+              key: 'customer-mobile-no',
+              typeId: 'type',
             },
             fields: {
               phoneNo: { en: phoneNumber },
@@ -142,7 +142,7 @@ const createCustomerService = async (email, phoneNumber = "", name) => {
 const checkSocialUserService = async (email) => {
   try {
     const userWithEmail = await firebaseAuth.getUserByEmail(email);
-    console.log(userWithEmail, "this is updated user ");
+    console.log(userWithEmail, 'this is updated user ');
     if (userWithEmail.providerData.length === 1) {
       return 1;
     } else if (userWithEmail.providerData.length > 1) {
@@ -200,7 +200,7 @@ const deleteSocialUserService = async (uid) => {
 const addFirstItemToCartService = async (productId) => {
   try {
     const cartItemDraft = {
-      currency: "EUR",
+      currency: 'EUR',
       quantity: 1,
       lineItems: [
         {
@@ -238,7 +238,7 @@ const addLineItemsService = async (productId, cartId, versionId) => {
           version: parseInt(versionId),
           actions: [
             {
-              action: "addLineItem",
+              action: 'addLineItem',
               productId: productId,
               variantId: 1,
             },
@@ -272,7 +272,7 @@ const removeCartItemService = async (lineItemId, cartId, versionId) => {
           version: parseInt(versionId),
           actions: [
             {
-              action: "removeLineItem",
+              action: 'removeLineItem',
               lineItemId,
             },
           ],
@@ -305,7 +305,7 @@ const addEmailIdAsGuestUserService = async (cartId, versionId, email) => {
           version: parseInt(versionId),
           actions: [
             {
-              action: "setCustomerEmail",
+              action: 'setCustomerEmail',
               email,
             },
           ],
@@ -364,7 +364,7 @@ const addShippingAddressService = async (
           version: parseInt(versionId),
           actions: [
             {
-              action: "setShippingAddress",
+              action: 'setShippingAddress',
               address: {
                 firstName,
                 lastName,
@@ -420,7 +420,7 @@ const changeLineItemsQtyService = async (
   quantity
 ) => {
   try {
-    console.log(cartId, versionId, lineItemId, quantity, "this is arguments");
+    console.log(cartId, versionId, lineItemId, quantity, 'this is arguments');
 
     const result = await apiRoot
       .carts()
@@ -430,7 +430,7 @@ const changeLineItemsQtyService = async (
           version: parseInt(versionId),
           actions: [
             {
-              action: "changeLineItemQuantity",
+              action: 'changeLineItemQuantity',
               lineItemId: lineItemId,
               quantity,
             },
@@ -443,6 +443,192 @@ const changeLineItemsQtyService = async (
     console.log(error);
   }
 };
+
+const addShippingMethodForUserService = async (
+  cartId,
+  versionId,
+  shippingMethodId
+) => {
+  try {
+    const result = await apiRoot
+      .carts()
+      .withId({ ID: cartId })
+      .post({
+        body: {
+          version: parseInt(versionId),
+          actions: [
+            {
+              action: 'setShippingMethod',
+              shippingMethod: {
+                id: shippingMethodId,
+                typeId: 'shipping-method',
+              },
+            },
+          ],
+        },
+      })
+      .execute();
+    return result.body;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const addBilligAddressService = async (
+  cartId,
+  versionId,
+  firstName,
+  lastName,
+  streetName,
+  country,
+  city,
+  postalCode,
+  phone
+) => {
+  try {
+    console.log(
+      cartId,
+      versionId,
+      firstName,
+      lastName,
+      streetName,
+      country,
+      city,
+      postalCode,
+      phone
+    );
+    const result = await apiRoot
+      .carts()
+      .withId({ ID: cartId })
+      .post({
+        body: {
+          version: parseInt(versionId),
+          actions: [
+            {
+              action: 'setBillingAddress',
+              address: {
+                firstName,
+                lastName,
+                streetName,
+                country,
+                city,
+                postalCode,
+                phone,
+              },
+            },
+          ],
+        },
+      })
+      .execute();
+    return result.body;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const getTotalCartItemsService = async (cartId) => {
+  try {
+    const result = await apiRoot.carts().withId({ ID: cartId }).get().execute();
+    return result.body;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const generateOrderByCartService = async (cartId, versionID) => {
+  try {
+    const result = await apiRoot
+      .orders()
+      .post({
+        body: {
+          cart: {
+            id: cartId,
+            typeId: 'cart',
+          },
+          version: parseInt(versionID),
+        },
+      })
+      .execute();
+    console.log(result);
+    return result.body;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const decodeTokenService = async (token) => {
+  try {
+    const result = await apiRoot
+      .me()
+      .get({
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .execute();
+    console.log(result);
+    return result;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const getOrderListService = async (email) => {
+  try {
+    const result = await apiRoot
+      .orders()
+      .get({
+        queryArgs: {
+          where: `customerEmail="${email}"`,
+        },
+      })
+      .execute();
+    console.log(result, 'this is result');
+    return result;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const addEmailToGuestUserOrderService = async (orderList, customerId) => {
+  try {
+    const result = await apiRoot
+      .customers()
+      .get({
+        queryArgs: {
+          where: `email="pandyaprathmesh360@gmail.com"`,
+        },
+      })
+      .execute();
+    if (result.statusCode === 200) {
+      console.log("entering in the final stage ------------------------------");
+      const orders = orderList.map(async (item) => {
+        const addEmail = await apiRoot
+          .orders()
+          .withId({ ID: item.id })
+          .post({
+            body: {
+              version: parseInt(item.version),
+              actions: [
+                {
+                  action: 'setCustomerId',
+                  customerId,
+                },
+              ],
+            },
+          })
+          .execute();
+          console.log(addEmail);
+        return addEmail;
+      });
+      console.log(orders,"this is oreders -------------------------");
+      return orders;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 // Export the functions for external use
 module.exports = {
   getProductService,
@@ -460,4 +646,11 @@ module.exports = {
   addShippingAddressService,
   getCartByIdService,
   changeLineItemsQtyService,
+  addShippingMethodForUserService,
+  addBilligAddressService,
+  getTotalCartItemsService,
+  generateOrderByCartService,
+  decodeTokenService,
+  getOrderListService,
+  addEmailToGuestUserOrderService,
 };
