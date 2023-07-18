@@ -4,7 +4,6 @@ const userSchema = `#graphql
 
     type Query {
         verifyUserByTokenId:JSON
-        verifyoobCode(oobCode:String!):JSON
     }
 
     type Mutation {

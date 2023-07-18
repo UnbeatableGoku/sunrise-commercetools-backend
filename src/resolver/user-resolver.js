@@ -184,29 +184,10 @@ const verifyUserByToken = async (parent, args, { req, res }) => {
   }
 };
 
-const verifyoobCodeResolver = async (parent, { oobCode }) => {
-  try {
-    // Decode the oobCode
-    const decodedToken = jwt.decode(oobCode);
 
-    // Access the email from the decoded token
-
-    // Perform any necessary actions with the verified email
-
-    return {
-      success: true,
-      message: 'Email verification successful',
-      decodedToken,
-    };
-  } catch (error) {
-    console.error('Error during email verification:', error);
-    throw new Error('Failed to verify email');
-  }
-};
 const userResolver = {
   Query: {
     verifyUserByTokenId: verifyUserByToken,
-    verifyoobCode: verifyoobCodeResolver,
   },
   Mutation: {
     createCustomer: addNewCustomer,

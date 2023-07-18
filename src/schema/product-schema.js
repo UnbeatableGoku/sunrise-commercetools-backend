@@ -18,7 +18,7 @@ const productSchema = `#graphql
     changeCartItemsQty(cartId:String!,versionId:String!,lineItemId:String!,quantity:Int!):JSON
     addShippingMethod(cartId:String!,versionId:String!,shippingMethodId:String!):JSON
     addBillingAddress(shippingAddresInput:shippingAddress,cartId:String!,versionId:String!):JSON
-    getCartItems(cartId:String!):Cart
+    getCartItems(cartId:String!):JSON
     generateOrderByCartID(cartId:String!,versionId:String!):JSON
   }
 
