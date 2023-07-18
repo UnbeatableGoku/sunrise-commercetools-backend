@@ -1,4 +1,4 @@
-const typeDefs = `#graphql
+const productSchema = `#graphql
 
   scalar JSON
 
@@ -7,26 +7,19 @@ const typeDefs = `#graphql
     singleProduct(id: String!): Product
     searchProducts(query: String): [Product]
     searchSuggestion(keyword: String!): [Suggestion]
-    verifyUserByTokenId:JSON
   }
 
   type Mutation {
-    auth(token: String!): JSON
-    verifyExistUser(email: String!, phoneNumber: String!): JSON
-    createCustomer(tokenId: String!): JSON
-    verifySocialUser(token:String!):JSON
-    generateToken(token:String!):JSON
     createCart(productId:String!):JSON
     addItemsToCart(productId:String!,cartId:String!,versionId:String!):JSON
     removeItemFromCart(lineItemId:String!,cartId:String!,versionId:String!):JSON
-    addEmailIdAsGuest(cartId:String!,versionId:String!,email:String!):JSON
     addShippingAddress(shippingAddresInput:shippingAddress,cartId:String!,versionId:String!):JSON
     getCartById(cartId:String!):JSON
     changeCartItemsQty(cartId:String!,versionId:String!,lineItemId:String!,quantity:Int!):JSON
     addShippingMethod(cartId:String!,versionId:String!,shippingMethodId:String!):JSON
     addBillingAddress(shippingAddresInput:shippingAddress,cartId:String!,versionId:String!):JSON
     getCartItems(cartId:String!):Cart
-    generateOrderByCartID(cartId:String!,versionID:String!):JSON
+    generateOrderByCartID(cartId:String!,versionId:String!):JSON
   }
 
   type Cart {
@@ -36,9 +29,9 @@ const typeDefs = `#graphql
     versionModifiedAt:String
     lineItems:[LineItem]
     totalPrice:JSON
-  shippingInfo:JSON
-  taxedPrice:JSON
-  totalLineItemQuantity:Int
+    shippingInfo:JSON
+    taxedPrice:JSON
+    totalLineItemQuantity:Int
   }
 
 type LineItem{
@@ -111,4 +104,4 @@ value:String
   }
 `;
 
-module.exports = { typeDefs };
+module.exports = { productSchema };
