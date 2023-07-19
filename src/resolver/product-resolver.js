@@ -1,19 +1,13 @@
-const { authClient } = require('../config/buildClient');
-const { firebaseAuth } = require('../config/firebseConfig');
+const { authClient } = require("../config/buildClient");
+const { firebaseAuth } = require("../config/firebseConfig");
 const {
   getProductService,
   getProductDetailsService,
   getSearchProductsService,
   getSearchSuggestionService,
-  createCustomerService,
-  checkSocialUserService,
-  updateUserEmailService,
-  deleteSocialUserService,
-  addToCartService,
   addFirstItemToCartService,
   addLineItemsService,
   removeCartItemService,
-  addEmailIdAsGuestUserService,
   addShippingAddressService,
   getCartByIdService,
   changeLineItemsQtyService,
@@ -23,8 +17,7 @@ const {
   generateOrderByCartService,
   decodeTokenService,
   getOrderListService,
-  addEmailToGuestUserOrderService,
-} = require('../services/product-service');
+} = require("../services/product-service");
 /**
  * Retrieves a list of products.
  *
@@ -37,7 +30,7 @@ const getProducts = async () => {
     return products;
   } catch (error) {
     console.error(error);
-    throw new Error('Failed to fetch products');
+    throw new Error("Failed to fetch products");
   }
 };
 
@@ -56,7 +49,7 @@ const getProductDetails = async (parent, { id }) => {
     return details;
   } catch (error) {
     console.log(error);
-    throw new Error('Failed to fetch product details');
+    throw new Error("Failed to fetch product details");
   }
 };
 
@@ -74,7 +67,7 @@ const getSearchedProducts = async (parent, { query }) => {
     return products;
   } catch (error) {
     console.log(error);
-    throw new Error('Failed to fetch products');
+    throw new Error("Failed to fetch products");
   }
 };
 
@@ -92,7 +85,7 @@ const getSearchSuggestion = async (parent, { keyword }) => {
     return suggestion;
   } catch (error) {
     console.log(error);
-    throw new Error('Failed to fetch the suggestion');
+    throw new Error("Failed to fetch the suggestion");
   }
 };
 
@@ -107,7 +100,7 @@ const getSearchSuggestion = async (parent, { keyword }) => {
 const getAuthentication = async (parent, { token }) => {
   try {
     console.log(token);
-    return 'hello world';
+    return "hello world";
   } catch (error) {
     console.log(error);
   }
@@ -128,7 +121,7 @@ const addFirstItemToCart = async (parent, { productId }) => {
     return items;
   } catch (error) {
     console.log(error);
-    throw new Error('Failed to add first item to cart');
+    throw new Error("Failed to add first item to cart");
   }
 };
 
@@ -146,7 +139,7 @@ const addLineItems = async (parent, { productId, cartId, versionId }) => {
     return result;
   } catch (error) {
     console.log(error);
-    throw new Error('Failed to add Line items');
+    throw new Error("Failed to add Line items");
   }
 };
 
@@ -173,18 +166,19 @@ const removeCartItem = async (parent, { lineItemId, cartId, versionId }) => {
  */
 const addShippingAddressForUser = async (
   parent,
-  { shippingAddresInput, cartId, versionId }
+  { addresInput, cartId, versionId }
 ) => {
+  console.log(addresInput, "000000000000000000000000000000");
   const result = await addShippingAddressService(
     cartId,
     versionId,
-    shippingAddresInput.firstName,
-    shippingAddresInput.lastName,
-    shippingAddresInput.streetName,
-    shippingAddresInput.country,
-    shippingAddresInput.city,
-    shippingAddresInput.postalCode,
-    shippingAddresInput.phone
+    addresInput.firstName,
+    addresInput.lastName,
+    addresInput.streetName,
+    addresInput.country,
+    addresInput.city,
+    addresInput.postalCode,
+    addresInput.phone
   );
   return result;
 };
@@ -245,30 +239,30 @@ const addShippingMethodForUser = async (
     return result;
   } catch (error) {
     console.log(error);
-    throw new Error('Failed To add shipping method');
+    throw new Error("Failed To add shipping method");
   }
 };
 
 const addBillingAddressForUser = async (
   parent,
-  { shippingAddresInput, cartId, versionId }
+  { addresInput, cartId, versionId }
 ) => {
   try {
     const result = await addBilligAddressService(
       cartId,
       versionId,
-      shippingAddresInput.firstName,
-      shippingAddresInput.lastName,
-      shippingAddresInput.streetName,
-      shippingAddresInput.country,
-      shippingAddresInput.city,
-      shippingAddresInput.postalCode,
-      shippingAddresInput.phone
+      addresInput.firstName,
+      addresInput.lastName,
+      addresInput.streetName,
+      addresInput.country,
+      addresInput.city,
+      addresInput.postalCode,
+      addresInput.phone
     );
     return result;
   } catch (error) {
     console.log(error);
-    throw new Error('Failed to add billingAddress');
+    throw new Error("Failed to add billingAddress");
   }
 };
 const getTotalCartItems = async (parent, { cartId }) => {
@@ -277,7 +271,7 @@ const getTotalCartItems = async (parent, { cartId }) => {
     return result;
   } catch (error) {
     console.log(error);
-    throw new Error('failed to get total cart items');
+    throw new Error("failed to get total cart items");
   }
 };
 
@@ -287,7 +281,7 @@ const generateOrderByCart = async (parent, { cartId, versionId }) => {
     return result;
   } catch (error) {
     console.log(error);
-    throw new Error('failed to genereate order by cartid')
+    throw new Error("failed to genereate order by cartid");
   }
 };
 

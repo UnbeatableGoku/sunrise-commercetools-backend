@@ -2,25 +2,7 @@ const productSchema = `#graphql
 
   scalar JSON
 
-  type Query {
-    products: [Product]
-    singleProduct(id: String!): Product
-    searchProducts(query: String): [Product]
-    searchSuggestion(keyword: String!): [Suggestion]
-  }
-
-  type Mutation {
-    createCart(productId:String!):JSON
-    addItemsToCart(productId:String!,cartId:String!,versionId:String!):JSON
-    removeItemFromCart(lineItemId:String!,cartId:String!,versionId:String!):JSON
-    addShippingAddress(shippingAddresInput:shippingAddress,cartId:String!,versionId:String!):JSON
-    getCartById(cartId:String!):JSON
-    changeCartItemsQty(cartId:String!,versionId:String!,lineItemId:String!,quantity:Int!):JSON
-    addShippingMethod(cartId:String!,versionId:String!,shippingMethodId:String!):JSON
-    addBillingAddress(shippingAddresInput:shippingAddress,cartId:String!,versionId:String!):JSON
-    getCartItems(cartId:String!):JSON
-    generateOrderByCartID(cartId:String!,versionId:String!):JSON
-  }
+  
 
   type Cart {
     type:String
@@ -61,7 +43,17 @@ value:String
     text: String
   }
 
-  input shippingAddress{
+  input AddresInput{
+    firstName:String
+    lastName:String
+    streetName:String
+    country:String
+    city:String
+    postalCode:String
+    phone:String
+  }
+
+  type Address{
     firstName:String
     lastName:String
     streetName:String
@@ -77,6 +69,7 @@ value:String
     metaDescription: Name
     masterVariant: ProductVariant
     variants: [ProductVariant]
+    quantity:Int
   }
 
   type ProductVariant {
@@ -101,6 +94,38 @@ value:String
 
   type Image {
     url: String
+  }
+
+  type Query {
+    products: [Product]
+    singleProduct(id: String!): Product
+    searchProducts(query: String): [Product]
+    searchSuggestion(keyword: String!): [Suggestion]
+  }
+
+  type CartResponse {
+    id:ID!
+    version:Int
+    lineItems:[Product]
+    customerEmail:String
+    shippingAddress:Address
+    billingAddress:Address
+    taxedPrice:JSON
+    totalGross:JSON
+    totalPrice:JSON
+    totalLineItemQuantity:Int
+  }
+  type Mutation {
+    createCart(productId:String!):CartResponse
+    addItemsToCart(productId:String!,cartId:String!,versionId:String!):CartResponse
+    removeItemFromCart(lineItemId:String!,cartId:String!,versionId:String!):CartResponse
+    changeCartItemsQty(cartId:String!,versionId:String!,lineItemId:String!,quantity:Int!):CartResponse
+    addShippingAddress(addresInput:AddresInput!,cartId:String!,versionId:String!):JSON
+    getCartById(cartId:String!):JSON
+    addShippingMethod(cartId:String!,versionId:String!,shippingMethodId:String!):JSON
+    addBillingAddress(addresInput:AddresInput!,cartId:String!,versionId:String!):JSON
+    getCartItems(cartId:String!):JSON
+    generateOrderByCartID(cartId:String!,versionId:String!):JSON
   }
 `;
 

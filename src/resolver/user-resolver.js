@@ -1,10 +1,10 @@
-const { authClient } = require('../config/buildClient');
-const { firebaseAuth } = require('../config/firebseConfig');
-const jwt = require('jsonwebtoken');
+const { authClient } = require("../config/buildClient");
+const { firebaseAuth } = require("../config/firebseConfig");
+const jwt = require("jsonwebtoken");
 const {
   decodeTokenService,
   getOrderListService,
-} = require('../services/product-service');
+} = require("../services/product-service");
 const {
   createCustomerService,
   checkSocialUserService,
@@ -12,7 +12,7 @@ const {
   updateUserEmailService,
   addEmailIdAsGuestUserService,
   addEmailToGuestUserOrderService,
-} = require('../services/user-service');
+} = require("../services/user-service");
 
 /**
  * Adds a new customer.
@@ -29,24 +29,24 @@ const addNewCustomer = async (parent, { tokenId }, { res }) => {
     console.log(tokenId);
     const decode = await firebaseAuth.verifyIdToken(tokenId);
     const user = await firebaseAuth.getUser(decode.uid);
-    console.log('this is decode --------------', user);
+    console.log("this is decode --------------", user);
 
     const result = await createCustomerService(
       user.email,
       user.phoneNumber || user.phone_number,
       user.displayName || user.name
     );
-    console.log(result, '-------------------------this is result ');
+    console.log(result, "-------------------------this is result ");
     const accesstoken = await authClient.customerPasswordFlow({
       username: user.email,
       password: user.email,
     });
-    const cookieOption = { httpOnly: true, sameSite: 'none', secure: true };
-    res.cookie('token', accesstoken.access_token, cookieOption);
+    const cookieOption = { httpOnly: true, sameSite: "none", secure: true };
+    res.cookie("token", accesstoken.access_token, cookieOption);
     return accesstoken;
   } catch (error) {
     console.log(error);
-    throw new Error('Failed to add new customer');
+    throw new Error("Failed to add new customer");
   }
 };
 
@@ -65,22 +65,22 @@ const checkSocialUser = async (parent, { token }) => {
     const uid = decode.uid;
     const email = user.providerData[0].email;
     const result = await checkSocialUserService(email);
-    console.log(result, 'this is result ');
+    console.log(result, "this is result ");
     if (result > 1) {
       const deleteSocialUser = await deleteSocialUserService(uid);
-      console.log(deleteSocialUser, 'deleteSocialUser successfully');
+      console.log(deleteSocialUser, "deleteSocialUser successfully");
       return { signupWithSocial: false };
     }
     if (result === 1) {
       return { loginWithSocial: true };
     } else {
       const userWithUpdatedEmail = await updateUserEmailService(uid, email);
-      console.log(userWithUpdatedEmail, 'updateSocialEmail successfully');
+      console.log(userWithUpdatedEmail, "updateSocialEmail successfully");
       return { signupWithSocial: true };
     }
   } catch (error) {
     console.log(error);
-    throw new Error('Failed to check social user');
+    throw new Error("Failed to check social user");
   }
 };
 
@@ -101,12 +101,12 @@ const generateCustomerToken = async (parent, { token }, { req, res }) => {
       username: user.email,
       password: user.email,
     });
-    const cookieOption = { httpOnly: true, sameSite: 'none', secure: true };
-    res.cookie('token', accesstoken.access_token, cookieOption);
+    const cookieOption = { httpOnly: true, sameSite: "none", secure: true };
+    res.cookie("token", accesstoken.access_token, cookieOption);
     return accesstoken;
   } catch (error) {
     console.log(error);
-    throw new Error('Failed to generate customer token');
+    throw new Error("Failed to generate customer token");
   }
 };
 
@@ -137,7 +137,7 @@ const checkExistUser = async (parent, { email, phoneNumber }) => {
       }
     } catch (error) {
       console.log(error);
-      if (error.code === 'auth/user-not-found') {
+      if (error.code === "auth/user-not-found") {
         return {
           userExist: false,
         };
@@ -164,11 +164,11 @@ const verifyUserByToken = async (parent, args, { req, res }) => {
     console.log(req.cookies.token);
     const result = await decodeTokenService(req.cookies.token);
     if (result.statusCode === 200) {
-      console.log('entering in getOrderList Service--------------------------');
+      console.log("entering in getOrderList Service--------------------------");
       const orderList = await getOrderListService(result.body.email);
       if (orderList.statusCode === 200) {
         console.log(
-          'entering in addEmaiiltogusetuserorder Service--------------------------'
+          "entering in addEmaiiltogusetuserorder Service--------------------------"
         );
         const updatedOrderList = await addEmailToGuestUserOrderService(
           orderList.body.results,
@@ -183,7 +183,6 @@ const verifyUserByToken = async (parent, args, { req, res }) => {
     console.log(error);
   }
 };
-
 
 const userResolver = {
   Query: {

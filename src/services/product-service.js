@@ -313,7 +313,7 @@ const changeLineItemsQtyService = async (
         },
       })
       .execute();
-    return result;
+    return result.body;
   } catch (error) {
     console.log(error);
   }
